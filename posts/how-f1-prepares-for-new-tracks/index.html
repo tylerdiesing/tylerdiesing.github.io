@@ -8,7 +8,7 @@
 
 <meta name="author" content="Tyler Diesing">
 
-<title>What Do F1 Teams Do When They Have No Previous Data? – WheelBlog</title>
+<title>What does one of the greatest title rivalries in F1 history look like through the data? – WheelBlog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -148,7 +148,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">What Do F1 Teams Do When They Have No Previous Data?</h1>
+      <h1 class="title">What does one of the greatest title rivalries in F1 history look like through the data?</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">Formula 1</div>
                 <div class="quarto-category">F1</div>
@@ -190,18 +190,414 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<p>New tracks? Unpredictable conditions? In a sport driven by data, what do F1 teams do when they have no data from previous races to look at?</p>
+<p>The 2021 Formula 1 season will undoubtedly go down as one of the best rivalry seasons of all time in any sport. Every race, every lap, every twist and turn of the season, Max Verstappen and Lewis Hamilton exchanged blows one way or another all the way up until the final race in Abu Dhabi where they both arrived on equal points. So, in a title fight that was tighter than any corner of the Monaco Street circuit, how did these two gladiators fare against each other throughout the season? Where did they gain on eachother? Where did they lose out? What could have been different? And how did these two manage to stay in another league compared to the rest of the grid?</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">+</span><span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(f1dataR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 2</code></pre>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: reticulate</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="for-this-analysis-i-mainly-used-data-from-the-f1datar-library-as-well-as-a-spreadsheet-i-made-for-points-totals-using-stats-i-got-from-the-official-f1-results-page-on-their-website." class="level2">
+<h2 class="anchored" data-anchor-id="for-this-analysis-i-mainly-used-data-from-the-f1datar-library-as-well-as-a-spreadsheet-i-made-for-points-totals-using-stats-i-got-from-the-official-f1-results-page-on-their-website.">For this analysis I mainly used data from the “f1datar” library, as well as a spreadsheet I made for points totals using stats I got from the official F1 results page on their website.</h2>
+<p>7x World Champion Lewis Hamilton VS Max Verstappen hunting for his first. Mercedes coming off of winning 7 constructors titles in a row VS Redbull looking for their first since 2013. Unstoppable force VS immovable object.</p>
+<p>You couldn’t have asked for a closer matchup, but just how close was it? lets put it into perspective…</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>race_points <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Race =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Verstappen =</span> <span class="fu">c</span>(<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">18</span>,<span class="dv">19</span>,<span class="dv">25</span>,<span class="dv">0</span>,<span class="dv">26</span>,<span class="dv">25</span>,<span class="dv">26</span>,<span class="dv">0</span>,<span class="dv">2</span>,<span class="dv">25</span>,<span class="dv">25</span>,<span class="dv">0</span>,<span class="dv">18</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">25</span>,<span class="dv">18</span>,<span class="dv">19</span>,<span class="dv">18</span>,<span class="dv">26</span>),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">Hamilton =</span> <span class="fu">c</span>(<span class="dv">25</span>,<span class="dv">19</span>,<span class="dv">25</span>,<span class="dv">25</span>,<span class="dv">7</span>,<span class="dv">0</span>,<span class="dv">18</span>,<span class="dv">19</span>,<span class="dv">12</span>,<span class="dv">25</span>,<span class="dv">18</span>,<span class="dv">15</span>,<span class="dv">19</span>,<span class="dv">0</span>,<span class="dv">25</span>,<span class="dv">10</span>,<span class="dv">19</span>,<span class="dv">18</span>,<span class="dv">25</span>,<span class="dv">25</span>,<span class="dv">26</span>,<span class="dv">18</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">Verstappen_Cumulative =</span> <span class="fu">cumsum</span>(Verstappen),</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">Hamilton_Cumulative =</span> <span class="fu">cumsum</span>(Hamilton)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> race_points <span class="sc">%&gt;%</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(Verstappen_Cumulative, Hamilton_Cumulative),</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Driver"</span>, <span class="at">values_to =</span> <span class="st">"Points"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Driver) <span class="sc">%&gt;%</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">LabelPos =</span> Points <span class="sc">+</span> <span class="dv">15</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(Race), <span class="at">y =</span> Points, <span class="at">fill =</span> Driver)) <span class="sc">+</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.8</span>), <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">y =</span> LabelPos, <span class="at">label =</span> Points), </span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">0</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>,</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>            <span class="at">size =</span> <span class="fl">1.9</span>, <span class="at">color =</span> <span class="st">"black"</span>,</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>            <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.8</span>)) <span class="sc">+</span>  <span class="co"># Only position_dodge here</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">breaks =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">22</span>) <span class="sc">+</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Verstappen_Cumulative"</span> <span class="ot">=</span> <span class="st">"blue"</span>, </span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Hamilton_Cumulative"</span> <span class="ot">=</span> <span class="st">"#00D2BE"</span>),</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Lewis Hamilton"</span>, <span class="st">"Max Verstappen"</span>)) <span class="sc">+</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"The finest of margins: points totals after each race"</span>,</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="st">       even the smallest difference in results at any race could have changed the entire </span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="st">       outcome of the season"</span>,</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"From stats on F1 website | by Tyler Diesing"</span>,</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Race Number"</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Cumulative Points"</span>) <span class="sc">+</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">0</span>, <span class="at">vjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">20</span>),</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">16</span>, <span class="at">face =</span> <span class="st">"bold"</span>), </span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>)            </span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expand_limits</span>(<span class="at">y =</span> <span class="fu">max</span>(plot_data<span class="sc">$</span>LabelPos) <span class="sc">+</span> <span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
+</div>
+<p>This is every race of the 2021 season through the lens of how many points Hamilton and Verstappen had accumulated after each round, which shows a couple key moments throughout the season. The first thing you should know is how much each finishing position is worth in points. Only the top ten earn points with A 1st place finish being 25 points in the bag, 2nd place = 18 points, 3rd = 15 points, and 4th = 12 points with the rest of the positions decreasing by 2 points until 10th place which is worth 1.</p>
+<p>Safe to say, Max and Lewis occupied the podium a lot, in fact, the first five races were won by either one of them. This brings us to round 6 in Azerbaijan, our first truly pivotal moment. Verstappen suffered a tire blowout on the main straight, sending his RedBull bouncing off the barriers and taking away an opportunity to score points. Lewis, who was now leading the race, now had a perfect opportunity to put a major gap between himself and Max in the standings, except he didn’t, because he didn’t collect a single point that day because he locked his brakes on the restart, allowing every driver behind him to slip by.</p>
+<p>Neither driver got points that day, and you’ll notice the same thing happened during round 14 in Italy. In spectacular fashion, Lewis was coming out of the pits as Max was coming down the main straight right behind him. The two cars went side by side into Monzas notoriously tight turn 1 and inevitably Verstappen’s RedBull ended up sitting atop Hamilton’s Mercedes in the gravel. Another 0-0 for our champions.</p>
+<p>These two races are a lot to think about, but especially when you also look at how the lead swung between them throughout the season. Lewis looked set to take off with the title after round 4, but a brutal round 5 in Monaco not only brought Max back into the fight, it propelled him to heights like round 9 where suddenly it was looking like he might run away with the championship. From there on you can see the two were practically wheel to wheel every race until somehow they arrived at the grand finale in Abu Dhabi with equal points.</p>
+<p>The races themselves were thrillers, but this chart shows just how absurdly close Max and Lewis were for the whole season. Beyond that, it also shows what I think Lewis Hamilton’s nightmares must look like after ultimately losing that final race. All it would’ve taken was for him to finish just one of those two zero point races for everything to be different.</p>
+<p>Slightly lighter on the brakes into turn one at Azerbaijan and Lewis Hamilton would be a record breaking 8x world champion.</p>
+<p>Let’s zoom in and take a look at some individual races, starting with the French Grand Prix at Circuit Paul Ricard.</p>
+<p>This is a line chart showing each individual lap time throughout the whole race along with tire/pitstop strategy. Strategists for the teams spend days staring at charts like this in an effort to figure out what kind of strategy will work best for which tires, tracks, weather, elevations, the list goes on.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>laps_data <span class="ot">&lt;-</span> <span class="fu">load_laps</span>(<span class="at">season =</span> <span class="dv">2021</span>, <span class="at">round =</span> <span class="dv">7</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> laps_data <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(driver_id <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"max_verstappen"</span>, <span class="st">"hamilton"</span>))</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>full_lap_sequence <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">max</span>(plot_data<span class="sc">$</span>lap))</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>plot_data_complete <span class="ot">&lt;-</span> plot_data <span class="sc">%&gt;%</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">complete</span>(driver_id, <span class="at">lap =</span> full_lap_sequence, <span class="at">fill =</span> <span class="fu">list</span>(<span class="at">time_sec =</span> <span class="cn">NA</span>))</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>plot_data_complete <span class="ot">&lt;-</span> plot_data_complete <span class="sc">%&gt;%</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time_sec =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span> <span class="sc">&amp;</span> lap <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">19</span>, <span class="dv">33</span>) <span class="sc">~</span> <span class="cn">NA_real_</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    driver_id <span class="sc">==</span> <span class="st">"hamilton"</span> <span class="sc">&amp;</span> lap <span class="sc">==</span> <span class="dv">20</span> <span class="sc">~</span> <span class="cn">NA_real_</span>,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> time_sec</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_data_complete, <span class="fu">aes</span>(<span class="at">x =</span> lap, <span class="at">y =</span> time_sec, <span class="at">color =</span> driver_id)) <span class="sc">+</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span>  </span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="fu">max</span>(plot_data_complete<span class="sc">$</span>lap), <span class="at">by =</span> <span class="dv">1</span>),</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(plot_data_complete<span class="sc">$</span>lap) <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="cf">function</span>(x) <span class="fu">paste0</span>(<span class="fu">floor</span>(x <span class="sc">/</span> <span class="dv">60</span>), <span class="st">":"</span>, <span class="fu">formatC</span>(x <span class="sc">%%</span> <span class="dv">60</span>, <span class="at">width =</span> <span class="dv">2</span>, <span class="at">flag =</span> <span class="st">"0"</span>)),</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">96</span>, <span class="dv">102</span>),</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">96</span>, <span class="dv">102</span>, <span class="at">by =</span> <span class="dv">2</span>),</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set1"</span>) <span class="sc">+</span>  </span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Strategy wins races, except when its bad strategy"</span>,</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"The French GP was voted one of the best of the season.</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="st">    Lap times show key differences in speed, strategy, and </span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="st">    tire choice that resulted in a painful last minute loss for Lewis"</span>,</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"stats by f1datar | Graph by Tyler Diesing"</span>,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Lap Number"</span>,</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Lap Time"</span>,</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Driver"</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span>  </span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"gray90"</span>, <span class="at">size =</span> <span class="fl">0.5</span>),  </span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_line</span>(<span class="at">color =</span> <span class="st">"gray95"</span>, <span class="at">size =</span> <span class="fl">0.25</span>),</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,  </span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>),  </span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),  </span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>)</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span> </span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span>, lap <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">17</span>, <span class="dv">31</span>)),</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">y =</span> time_sec), <span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">size =</span> <span class="dv">3</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span>, lap <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">17</span>, <span class="dv">31</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(time_sec)),</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">label =</span> <span class="st">"pit"</span>), <span class="at">vjust =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"blue"</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"hamilton"</span>, lap <span class="sc">==</span> <span class="dv">18</span>),</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">y =</span> time_sec), <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">size =</span> <span class="dv">3</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"hamilton"</span>, lap <span class="sc">==</span> <span class="dv">18</span>),</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">label =</span> <span class="st">"pit"</span>), <span class="at">vjust =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">nudge_x =</span> <span class="fl">0.2</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"red"</span></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span>, lap <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">19</span>, <span class="dv">33</span>)),</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">y =</span> time_sec), <span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="dv">0</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"hamilton"</span>, lap <span class="sc">==</span> <span class="dv">20</span>),</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">y =</span> time_sec), <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="dv">0</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(</span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span>, lap <span class="sc">==</span> <span class="dv">52</span>),</span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.2</span>, <span class="at">y =</span> time_sec), <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">size =</span> <span class="dv">3</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> plot_data_complete <span class="sc">%&gt;%</span> <span class="fu">filter</span>(driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span>, lap <span class="sc">==</span> <span class="dv">52</span>),</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.2</span>, <span class="at">label =</span> <span class="st">"VER overtake HAM"</span>), <span class="at">vjust =</span> <span class="fl">1.8</span>, <span class="at">nudge_x =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"black"</span></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> lap <span class="sc">+</span> <span class="fl">0.5</span>, <span class="at">y =</span> time_sec, <span class="at">label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>      driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span> <span class="sc">&amp;</span> lap <span class="sc">==</span> <span class="dv">17</span> <span class="sc">~</span> <span class="st">"(H)"</span>,</span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>      driver_id <span class="sc">==</span> <span class="st">"max_verstappen"</span> <span class="sc">&amp;</span> lap <span class="sc">==</span> <span class="dv">31</span> <span class="sc">~</span> <span class="st">"(M)"</span>,</span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>      driver_id <span class="sc">==</span> <span class="st">"hamilton"</span> <span class="sc">&amp;</span> lap <span class="sc">==</span> <span class="dv">18</span> <span class="sc">~</span> <span class="st">"(H)"</span>,</span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">""</span></span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>    )),</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>    <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">3.9</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>,<span class="at">nudge_x =</span> <span class="fl">0.3</span>,<span class="at">inherit.aes =</span> <span class="cn">FALSE</span></span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>  ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.
+ℹ Please use the `linewidth` argument instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_line()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 row containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 8 rows containing missing values or values outside the scale range
+(`geom_text()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Most teams had come to the conclusion that starting on medium tires and running a single pitstop to change to hard tires was the fastest route as you would only need to stop once and the hards would be able to last the whole race after the stop. Not RedBull.</p>
+<p>Max started on mediums like Lewis and trailed him until lap 18 where you can see he pits for Hards. This caught Hamilton off guard, as he was planning on a 1-stop strategy, which meant he should be trying to push those mediums as far as they can go to make sure the hards can make it to the end, but he also did not want Max to come out with fresh rubber and pass him as he gradually got slower before pitting for new tires, a move racing strategists call “the undercut”.</p>
+<p>They come back out onto the track on the hards and Lewis covers the undercut to keep first place, but look at Max’s times. He’s consistently setting faster laps on the same tire which means he is pushing the tire harder than Lewis, not something you’d do if you wanted to nurse a hard tire to the end after an early pit… This is likely where the Mercedes strategists realized that Max didn’t plan on running that tire to the end, he was just trying to push Lewis into killing his own rubber.</p>
+<p>You see Lewis ease up on the lap times and sure enough Verstappen gets the call to box for the medium tire. Showtime. Max comes out of the pits with softer, fresher rubber than Lewis and with 22 laps to go, the timing screens light up.</p>
+<p>You see Max suddenly setting 1:36’s as Lewis tries to go as fast as possible without ripping the tires to bits. Strategists on both ends of the pits began to worry as Max grew ever closer until the penultimate lap when Verstappen, with more confidence in his tires into turn 8, slipped into the lead to win.</p>
+<p>As 2nd Mercedes driver, Valtteri Bottas, said on the radio as Max sailed past him, “Why the **** did nobody listen to me when I said this would be a two-stop!”</p>
+<hr>
+<p>Every race of the season was a stunning example of what happens when you take two athletes at the top of their game and have them push eachother and their machines to the absolute limit. Hamilton put in some of the best laps of his career in races like Brazil and his home race in Great Britain. Verstappen put up equally incredible numbers in the U.S. and at RedBulls home in Austria.</p>
+<p>But there can only be one, and what better way to decide a championship than on equal points and plenty of controversy! That being said, lets take a look at this dot plot chronicling the 2021 Abu Dhabi Grand Prix.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(f1dataR)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>laps <span class="ot">&lt;-</span> <span class="fu">load_laps</span>(<span class="at">season =</span> <span class="dv">2021</span>, <span class="at">round =</span> <span class="dv">22</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>drivers <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"max_verstappen"</span>, <span class="st">"hamilton"</span>, <span class="st">"sainz"</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>lap_times <span class="ot">&lt;-</span> laps <span class="sc">%&gt;%</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(driver_id <span class="sc">%in%</span> drivers) <span class="sc">%&gt;%</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(driver_id, lap, time_sec) <span class="sc">%&gt;%</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(driver_id, lap)</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>lap_times <span class="ot">&lt;-</span> lap_times <span class="sc">%&gt;%</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(driver_id) <span class="sc">%&gt;%</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">cum_time =</span> <span class="fu">cumsum</span>(time_sec)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>leader_gaps <span class="ot">&lt;-</span> lap_times <span class="sc">%&gt;%</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(lap) <span class="sc">%&gt;%</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">leader_time =</span> <span class="fu">min</span>(cum_time, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">gap_to_leader =</span> cum_time <span class="sc">-</span> leader_time)</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>manual_points <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver_id =</span> <span class="fu">c</span>(<span class="st">"hamilton"</span>, <span class="st">"max_verstappen"</span>, <span class="st">"sainz"</span>, <span class="st">"hamilton"</span>, <span class="st">"max_verstappen"</span>, <span class="st">"sainz"</span>),</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">lap =</span> <span class="fu">c</span>(<span class="dv">57</span>, <span class="dv">57</span>, <span class="dv">57</span>, <span class="dv">58</span>, <span class="dv">58</span>, <span class="dv">58</span>),</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">gap_to_leader =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">1.2</span>, <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="fl">2.0</span>)  </span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>leader_gaps_fixed <span class="ot">&lt;-</span> leader_gaps <span class="sc">%&gt;%</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>(lap <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">57</span>, <span class="dv">58</span>) <span class="sc">&amp;</span> driver_id <span class="sc">%in%</span> drivers)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(manual_points)</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>gap_limit_fixed <span class="ot">&lt;-</span> <span class="fu">ceiling</span>(<span class="fu">max</span>(leader_gaps_fixed<span class="sc">$</span>gap_to_leader, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="dv">10</span>) <span class="sc">*</span> <span class="dv">10</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>event_lines <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">lap =</span> <span class="fu">c</span>(<span class="dv">13</span>, <span class="dv">14</span>, <span class="fl">20.5</span>, <span class="dv">1</span>, <span class="dv">58</span>),</span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"VER Pit"</span>, <span class="st">"HAM Pit"</span>, <span class="st">"PER backs up HAM"</span>, <span class="st">"HAM passes VER"</span>, <span class="st">"VER passes HAM"</span>),</span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"cyan"</span>, <span class="st">"orange"</span>, <span class="st">"green"</span>, <span class="st">"green"</span>),</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">linetype =</span> <span class="st">"solid"</span>,</span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">y_position =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">20</span>, <span class="dv">22</span>, <span class="dv">22</span>),</span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">size =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>),</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">x_position =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="dv">16</span>, <span class="cn">NA</span>, <span class="dv">3</span>, <span class="dv">58</span>)</span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>sc_vsc_periods <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> <span class="fu">c</span>(<span class="dv">36</span>, <span class="dv">53</span>),</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmax =</span> <span class="fu">c</span>(<span class="dv">37</span>, <span class="dv">57</span>),</span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="st">"SC/VSC"</span></span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(leader_gaps_fixed, <span class="fu">aes</span>(<span class="at">x =</span> lap, <span class="at">y =</span> gap_to_leader, <span class="at">color =</span> driver_id)) <span class="sc">+</span></span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_rect</span>(<span class="at">data =</span> sc_vsc_periods,</span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">xmin =</span> xmin, <span class="at">xmax =</span> xmax, <span class="at">ymin =</span> <span class="dv">0</span>, <span class="at">ymax =</span> gap_limit_fixed, <span class="at">fill =</span> label),</span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>            <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>            <span class="at">alpha =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb16-61"><a href="#cb16-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="fl">0.7</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb16-62"><a href="#cb16-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">data =</span> event_lines, <span class="fu">aes</span>(<span class="at">xintercept =</span> lap),</span>
+<span id="cb16-63"><a href="#cb16-63" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> event_lines<span class="sc">$</span>linetype,</span>
+<span id="cb16-64"><a href="#cb16-64" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> event_lines<span class="sc">$</span>color,</span>
+<span id="cb16-65"><a href="#cb16-65" aria-hidden="true" tabindex="-1"></a>             <span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb16-66"><a href="#cb16-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> event_lines,</span>
+<span id="cb16-67"><a href="#cb16-67" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">ifelse</span>(<span class="sc">!</span><span class="fu">is.na</span>(x_position), x_position, lap),</span>
+<span id="cb16-68"><a href="#cb16-68" aria-hidden="true" tabindex="-1"></a>                <span class="at">y =</span> y_position,</span>
+<span id="cb16-69"><a href="#cb16-69" aria-hidden="true" tabindex="-1"></a>                <span class="at">label =</span> label),</span>
+<span id="cb16-70"><a href="#cb16-70" aria-hidden="true" tabindex="-1"></a>            <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb16-71"><a href="#cb16-71" aria-hidden="true" tabindex="-1"></a>            <span class="at">angle =</span> <span class="dv">90</span>,</span>
+<span id="cb16-72"><a href="#cb16-72" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.4</span>,</span>
+<span id="cb16-73"><a href="#cb16-73" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="dv">0</span>,</span>
+<span id="cb16-74"><a href="#cb16-74" aria-hidden="true" tabindex="-1"></a>            <span class="at">size =</span> event_lines<span class="sc">$</span>size,</span>
+<span id="cb16-75"><a href="#cb16-75" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> event_lines<span class="sc">$</span>color,</span>
+<span id="cb16-76"><a href="#cb16-76" aria-hidden="true" tabindex="-1"></a>            <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb16-77"><a href="#cb16-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
+<span id="cb16-78"><a href="#cb16-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">58</span>, <span class="at">by =</span> <span class="dv">5</span>),</span>
+<span id="cb16-79"><a href="#cb16-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">58.5</span>),</span>
+<span id="cb16-80"><a href="#cb16-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb16-81"><a href="#cb16-81" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-82"><a href="#cb16-82" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb16-83"><a href="#cb16-83" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, gap_limit_fixed, <span class="at">by =</span> <span class="dv">10</span>),</span>
+<span id="cb16-84"><a href="#cb16-84" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, gap_limit_fixed),</span>
+<span id="cb16-85"><a href="#cb16-85" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)</span>
+<span id="cb16-86"><a href="#cb16-86" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-87"><a href="#cb16-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(</span>
+<span id="cb16-88"><a href="#cb16-88" aria-hidden="true" tabindex="-1"></a>    <span class="st">"max_verstappen"</span> <span class="ot">=</span> <span class="st">"blue"</span>,</span>
+<span id="cb16-89"><a href="#cb16-89" aria-hidden="true" tabindex="-1"></a>    <span class="st">"hamilton"</span> <span class="ot">=</span> <span class="st">"cyan"</span>,</span>
+<span id="cb16-90"><a href="#cb16-90" aria-hidden="true" tabindex="-1"></a>    <span class="st">"sainz"</span> <span class="ot">=</span> <span class="st">"red"</span></span>
+<span id="cb16-91"><a href="#cb16-91" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb16-92"><a href="#cb16-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
+<span id="cb16-93"><a href="#cb16-93" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"SC/VSC"</span> <span class="ot">=</span> <span class="st">"gold"</span>),</span>
+<span id="cb16-94"><a href="#cb16-94" aria-hidden="true" tabindex="-1"></a>    <span class="at">guide =</span> <span class="fu">guide_legend</span>(<span class="at">title =</span> <span class="cn">NULL</span>, <span class="at">override.aes =</span> <span class="fu">list</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>))</span>
+<span id="cb16-95"><a href="#cb16-95" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-96"><a href="#cb16-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(</span>
+<span id="cb16-97"><a href="#cb16-97" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">1</span>),</span>
+<span id="cb16-98"><a href="#cb16-98" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="fu">guide_legend</span>(<span class="at">order =</span> <span class="dv">2</span>)</span>
+<span id="cb16-99"><a href="#cb16-99" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-100"><a href="#cb16-100" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb16-101"><a href="#cb16-101" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"What decided the title decider?"</span>,</span>
+<span id="cb16-102"><a href="#cb16-102" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"HAM leads, but solid pit strategy, a legendary team play, </span></span>
+<span id="cb16-103"><a href="#cb16-103" aria-hidden="true" tabindex="-1"></a><span class="st">    and a miracle saw VER win in the final lap of a race </span></span>
+<span id="cb16-104"><a href="#cb16-104" aria-hidden="true" tabindex="-1"></a><span class="st">    that truly showed the level these two were at compared to others"</span>,</span>
+<span id="cb16-105"><a href="#cb16-105" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Data via f1dataR | Tyler Diesing"</span>,</span>
+<span id="cb16-106"><a href="#cb16-106" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Lap Number"</span>,</span>
+<span id="cb16-107"><a href="#cb16-107" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Gap to Leader (seconds)"</span>,</span>
+<span id="cb16-108"><a href="#cb16-108" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"Driver"</span></span>
+<span id="cb16-109"><a href="#cb16-109" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb16-110"><a href="#cb16-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="cb16-111"><a href="#cb16-111" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb16-112"><a href="#cb16-112" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"top"</span>,</span>
+<span id="cb16-113"><a href="#cb16-113" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>, <span class="at">color =</span> <span class="st">"white"</span>),</span>
+<span id="cb16-114"><a href="#cb16-114" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"white"</span>),</span>
+<span id="cb16-115"><a href="#cb16-115" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"white"</span>),</span>
+<span id="cb16-116"><a href="#cb16-116" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"white"</span>, <span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">16</span>),</span>
+<span id="cb16-117"><a href="#cb16-117" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"white"</span>, <span class="at">size =</span> <span class="dv">13</span>),</span>
+<span id="cb16-118"><a href="#cb16-118" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"white"</span>, <span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb16-119"><a href="#cb16-119" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb16-120"><a href="#cb16-120" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.major =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb16-121"><a href="#cb16-121" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"black"</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb16-122"><a href="#cb16-122" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"black"</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb16-123"><a href="#cb16-123" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"black"</span>),</span>
+<span id="cb16-124"><a href="#cb16-124" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.key =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"black"</span>),</span>
+<span id="cb16-125"><a href="#cb16-125" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">"white"</span>),</span>
+<span id="cb16-126"><a href="#cb16-126" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb16-127"><a href="#cb16-127" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 24 rows containing missing values or values outside the scale range
+(`geom_point()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 24 rows containing missing values or values outside the scale range
+(`geom_line()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>There’s a couple interesting things to see in this data. The dots show the gap (in seconds) to the lead car, which after a sensational lap 1 overtake, was Lewis for most of the time. I also included Ferrari driver Carlos Sainz as he was the best of the rest in third place, but also because when you add another driver to this chart it shows just how “in a league of their own” Max and Lewis really were.</p>
+<p>The race starts, Hamilton jumps Verstappen at the start, and its cat and mouse from here on out as the two instantly leave the rest of the grid trailing behind. Then comes the pit stops. Max came in on lap 13 and Lewis came in a lap later to cover the undercut. Both leaders pitting meant that the lead now belonged to Verstappen’s teammate, Sergio Perez, who was only given one order as Hamilton grew closer in his mirrors,</p>
+<p>“Back him up.”</p>
+<p>You can see Max losing a bit of pace to Lewis during laps 15-20, but then Sergio comes in and puts up a grizzly defense for 2 laps. That’s when you see Verstappen’s dot plot catch right up to Lewis at the front.</p>
+<p>Lewis and Max run 1-2 for pretty much the rest of the race, pushing each other so hard that Carlos and the rest of the grid are long behind them. The fight is still on, but lap by lap you see Max fade away and start to run out of options and laps… until a crashing Nicholas Latifi brings out the safety car. The SC bunches all of the drivers up, hence why Sainz suddenly makes up a 70 second gap to the pack. Verstappen takes the opportunity to make a pitstop under the safety car, but Hamilton stays out, fearing he may lose track position to max if he pits which would lose him the race if the safety car kept circling until the end of the race. Max comes out with fresher rubber, but he’s stuck behind a bunch of the cars that he and Lewis lapped during their scramble.</p>
+<p>So, either the race ends under SC and Hamilton wins or there is 1 last racing lap, but Max wouldn’t be able to fight through all the lapped cars in time to even put on a spectacle with Lewis. So surely Hamilton wins that coveted 8th title, right?</p>
+<p>Well that’s where it gets a little controversial. Rules state that either all lapped cars get to pass the leader to catch back up or none of them get to pass in order to not interrupt ongoing fights. In a shocking turn, however, race control only allowed the cars between Max and Lewis to catch back up, which now put Max and his brand new tires right behind Lewis on his old tires with just enough time for one racing lap.</p>
+<p>In what was probably the craziest single lap of racing I had ever seen, Verstappen eventually made the overtake to claim his maiden title, albeit slightly clouded by controversy.</p>
+<p>The point of all these charts and all of this data isn’t just to show off the neat ways F1 teams take in data and how it is weaponized into a competitive advantage, or even just to creatively display a fascinating title fight. It also shows just how incredible these two drivers were when all the chips were down. Almost every race was dominated by Verstappen or Hamilton by an impressive margin, and at the end of the season the next best driver was Hamilton’s teammate who was about 161 points behind the title challengers.</p>
+<p>There’s a million different ways to frame the countless data points in F1, but you may be hard pressed to find another pair of drivers that warrants that much analysis.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
